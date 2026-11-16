@@ -23,31 +23,27 @@ def limpiar_registro_sensor(registro_raw):
   }
 
 
-
 def generar_resumen_sensores(lista_sensores_limpios, umbral_temperatura):
-  # Para evitar la división por cero
-  if len(lista_sensores_limpios) == 0:
-    return ([], 0.0)
+    lista_sensores_alerta = []
+    suma_temperaturas = 0.0
+    cantidad_sensores = 0 
 
-  # Alerta
-  lista_sensores_alerta = []
-  suma_temperaturas = 0.0
+    for sensor in lista_sensores_limpios:
+        temp_actual = sensor["temperatura"]
+        suma_temperaturas += temp_actual
+        cantidad_sensores += 1  
 
-  for sensor in lista_sensores_limpios:
-    temp_actual = sensor["temperatura"]
-    suma_temperaturas += temp_actual
+        if temp_actual > umbral_temperatura:
+            lista_sensores_alerta.append(sensor["sensor_id"])
 
-    # Umbral
-    if temp_actual > umbral_temperatura:
-      lista_sensores_alerta.append(sensor["sensor_id"])
+    # Evitar la div por cero
+    if cantidad_sensores == 0:
+        return ([], 0.0)
 
-  # Promedio de temp
-  promedio_temperatura = suma_temperaturas / len(lista_sensores_limpios)
+    promedio_temperatura = suma_temperaturas / cantidad_sensores
 
-  # Tupla
-  return (lista_sensores_alerta, promedio_temperatura)
-
-
+    # Tupla
+    return (lista_sensores_alerta, promedio_temperatura)
 
 
 # EJECUCION
@@ -90,7 +86,7 @@ if __name__ == "__main__":
   )
 
   # Reporte final
-  print("=== REPORTE TÉRMICO ECOTECH SOLUTIONS ===")
+  print("REPORTE TÉRMICO DE ECOTECH SOLUTIONS")
   print(f"Total de sensores procesados: {len(sensores_limpios)}")
   print(f"Umbral máximo permitido: {umbral_maximo} °C")
   print(f"Temperatura promedio de la planta: {promedio_global:.2f} °C")
