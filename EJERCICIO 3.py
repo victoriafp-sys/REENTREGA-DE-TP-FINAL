@@ -33,8 +33,6 @@ class TestCalculoEmisiones(unittest.TestCase):
       calcular_emisiones_carbono(-50)
 
 
-# DJANGO (ver)
-
 def obtener_metricas_consumo(registros):
   # Si no hay registros, todo da 0
   if len(registros) == 0:
@@ -47,6 +45,7 @@ def obtener_metricas_consumo(registros):
   total_emisiones = 0.0
   planta_mayor = ""
   maximo_consumo = -1.0
+  consumo_por_planta = {}
 
   for registro in registros:
     planta = registro["planta"]
@@ -56,18 +55,19 @@ def obtener_metricas_consumo(registros):
     emision_planta = calcular_emisiones_carbono(consumo)
     total_emisiones += emision_planta
 
-    # Comparamos para encontrar la planta con mayor consumo
-    if consumo > maximo_consumo:
-      maximo_consumo = consumo
+    # Consumo acumulado total de la planta
+    consumo_acumulado = consumo_por_planta.get(planta, 0.0) + consumo
+    consumo_por_planta[planta] = consumo_acumulado
+
+    if consumo_acumulado > maximo_consumo:
+      maximo_consumo = consumo_acumulado
       planta_mayor = planta
-  
-  # Devolvemos el resumen en un diccionario
+
   return {
       "total_emisiones": round(total_emisiones, 2),
       "planta_mayor_consumo": planta_mayor,
-      "mayor_consumo_kwh": maximo_consumo,
-  }
-
+      "mayor_consumo_kwh": round(maximo_consumo, 2),
+  } 
 
 # Vista de Django para plantillas HTML
 
@@ -88,7 +88,7 @@ def vista_panel_sustentabilidad(request):
   # 2. Funcio de métricas 
   metricas = obtener_metricas_consumo(historial_plantas)
 
-  # 3. Diccionario de contexto para HTML
+  # 3. Contexto para HTML
   context = {
       "titulo_panel": "Panel de Sustentabilidad de EcoTech",
       "registros": historial_plantas,
